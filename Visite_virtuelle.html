@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<meta charset="UTF-8">
+		<title>Moastère Saint Pierre - Visite virtuelle</title>
+		<link rel="stylesheet" type="text/css" href="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/style.css">
+	</head>
+	<body>
+		<div id="display">
+		
+			<div id="debug"></div>
+
+			<div style="display: none;" id="blocker">Click pour démarrer</div>
+			
+			<div id="loadBar">
+				<span id="loadMSG">Chargement...</span>
+				<div style="width: 68%;" id="bar"></div>
+			</div>
+			
+			<div id="map">
+				<img id="plan" src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/plan_monastere.jpg" alt="plan du monastère">
+				<canvas id="cursor" width="307" height="421"></canvas>
+			</div>
+			
+		</div>
+		
+		<div id="menu">
+		<img src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/LogoMonastere.png" width="150px"><br>
+			<h1>Visite virtuelle</h1>
+			<div id="controlSelect" onchange="switchControls(this)">
+			<ul>
+				<li><input id="FirstPersonControls" name="controlsRadio" checked="checked" type="radio">Navigation<br></li>
+				<li><input id="TrackballControls" name="controlsRadio" type="radio"> Vue 3d</li>
+			</ul>
+			</div>
+			<div id="visibilite"></div><br>
+			<img src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/navigation.jpg" width="50%">
+		</div>
+		
+		<script src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/three.js"></script>
+		<script src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/PointerLockControls.js"></script>
+		<script src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/FirstPersonControls.html"></script>
+		<script src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/TrackballControls.js"></script>
+		<script src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/ColladaLoader.js"></script>
+		<script src="Moast%C3%A8re%20Saint%20Pierre%20-%20Visite%20virtuelle_fichiers/ControlsManager.js"></script>
+		<script>
+
+			var camera, scene, renderer;
+			var geometry, texture, material, mesh;
+			
+			var controls;
+			var curControl;
+			
+			var objects = [];
+			
+			var PI_2 = Math.PI / 2;
+
+			var blocker = document.getElementById( 'blocker' );
+
+			function switchControls ( controlSelect ){
+			
+				var radio = controlSelect.getElementsByTagName("input");
+				i = 0;
+				while (!radio[i].checked && i<radio.length){
+					i++;
+				}
+				controls.setCurrentController(radio[i].id);
+				
+			}
+			
+			function switchVisible ( name ){
+				var object = scene.getObjectByName(name,true);
+				var visible = !object.visible;
+				object.traverse(function(child){
+								if(child instanceof THREE.Object3D) child.visible=visible;
+							});
+				console.log(name+" visible : "+object.visible);
+			}
+
+			
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth * 0.8, window.innerHeight );
+
+			}
+			
+			function refreshMap( cameraPosition ){
+			
+				var map = document.getElementById("cursor");
+				var mapContext = map.getContext("2d");
+				
+				console.log(mapContext.fillStyle);
+				
+				var x = ( map.width / 2 ) + ( cameraPosition.x / 2 );
+				var y = ( map.height / 2 ) + ( cameraPosition.z / 2 );
+				
+				mapContext.clearRect(0,0,map.width,map.height);
+				
+				mapContext.fillStyle = "#FF0000";
+				mapContext.fillRect(x-5,y-5,10,10);
+				
+			}
+
+			function init() {
+			
+				
+
+			
+				scene = new THREE.Scene();
+				
+				var light = new THREE.HemisphereLight( 0xFFFFFF,0xFFFFFF,0.2);
+				scene.add( light );
+			
+				controls = new THREE.ControllersManager( blocker );
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth * 1 / window.innerHeight, 1, 1000 );
+				var FPControls = new THREE.PointerLockControls( camera );
+				
+
+				var camera2 = new THREE.PerspectiveCamera( 75, window.innerWidth * 1 / window.innerHeight, 1, 1000 );
+				var TBControls = new THREE.TrackballControls( camera2 );
+				
+				scene.add( FPControls.getObject() );
+				scene.add( TBControls.getObject() );
+				
+				controls.add(FPControls);
+				controls.add(TBControls);
+				controls.setCurrentController("FirstPersonControls");
+				
+				// Désactivation du click pour débuter
+				document.getElementById("blocker").style.display = 'none';
+				//document.getElementById("map").style.display = 'none';
+				
+				var count = 0;
+				var loadProgress = function( progress ) {
+
+					var bar = Math.floor(100 * progress.loaded / progress.total);
+					document.getElementById( "bar" ).style.width = bar + "%";
+					
+					count++;
+				};
+				
+				var loadEnd = function(collada){
+				
+					document.getElementById( "loadBar" ).style.display = "none";
+					
+					blocker.style.display = "-webkit-box";
+					blocker.style.display = "-moz-box";
+					blocker.style.display = "box";
+					
+					dae=collada.scene;
+					dae.scale.set(10,10,10);
+					dae.position.y -= 50;
+					/*for(var i=0, l=dae.children.length; i<l; i++){
+						/*dae.children[i].traverse(function(obj){
+								/*var colonnes = ["Colonne_marbre_noir_01","Colonne_marbre_noir_02","colonne_externe","colonne_externe_001","colonne_externe_002","colonne_externe_003","colonne_externe_004","colonne_externe_005","colonne_externe_006","colonne_externe_007","colonne_externe_008","colonne_externe_009"];
+								if(obj instanceof THREE.Mesh){
+									if(colonnes.indexOf(obj.name)>=0){
+										obj.geometry.computeBoundingBox();
+										var dim = new THREE.Vector3();
+										dim.subVectors(obj.geometry.boundingBox.max,obj.geometry.boundingBox.min);
+										geometry = new THREE.CubeGeometry(dim.x,dim.y,dim.z);
+										material = new THREE.MeshNormalMaterial({transparent: true, opacity: 0.5});
+										mesh = new THREE.Mesh(geometry,material);
+										mesh.name = obj.name+"_hitbox";
+										obj.add(mesh);
+										mesh.scale.copy(obj.scale);
+										mesh.position.copy(obj.position);
+
+										objects.push(mesh);
+									}
+									else{
+										objects.push(obj);
+									//}
+									document.getElementById("menu").innerHTML += "<br/>"+obj.name+"<input id="+obj.name+" type=checkbox checked=true>";
+								//}
+						});
+						document.getElementById("visibilite").innerHTML += "<br/>"+dae.children[i].name+"<input id="+dae.children[i].name+" type=checkbox checked=true>";
+						objects.push(dae.children[i]);
+					}*/
+					
+					for(var i=0, l=dae.children.length; i<l; i++){
+						if (dae.children[i].name == "TOITURES" || dae.children[i].name == "VOUTES"){
+						document.getElementById("visibilite").innerHTML += "<br/>"+dae.children[i].name+"<input id="+dae.children[i].name+" type=checkbox checked='checked' onchange='switchVisible(this.id)' />";
+												}
+						dae.children[i].traverse(function(obj){
+							objects.push(obj);
+						});
+
+					}
+					scene.add(dae);
+					
+				}
+
+				var loader = new THREE.ColladaLoader();
+				loader.options.convertUpAxis = true;
+				loader.load("modele/Monastere_objet.dae", loadEnd, loadProgress );
+				
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0x000000 );
+				renderer.setSize( window.innerWidth * 0.8, window.innerHeight );
+
+				document.getElementById("display").appendChild( renderer.domElement );
+				renderer.domElement.style.position="absolute";
+				
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function animate() {
+				
+				requestAnimationFrame( animate );
+				controls.update();
+				
+				refreshMap(controls.getCurrentController().getObject().position);
+				renderer.render( scene, controls.getCurrentCamera() );
+
+			}
+			
+			
+			init();
+			animate();
+
+		</script>
+	
+
+</body></html>

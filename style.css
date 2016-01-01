@@ -1,0 +1,174 @@
+html, body {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	background-color: #ffffff;
+	margin: 0;
+	overflow: hidden;
+	font-family: arial;
+}
+
+#display{
+
+	position: absolute;
+	
+	width: 80%;
+	height: 100%;
+	
+	margin: 0% 0% 0% 20%;
+	
+	color: #ffffff;
+}
+
+#debug {
+
+	position: absolute;
+
+	width: 100%;
+	
+	text-align: center;
+	
+	color: #ffffff;
+	background-color: rgba(0,0,0,0.5);
+	
+	z-index: 100;
+	
+}
+
+
+
+#blocker {
+
+	display: none;
+
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	
+	-webkit-box-orient: horizontal;
+	-moz-box-orient: horizontal;
+	box-orient: horizontal;
+
+	-webkit-box-pack: center;
+	-moz-box-pack: center;
+	box-pack: center;
+
+	-webkit-box-align: center;
+	-moz-box-align: center;
+	box-align: center;
+
+	font-size: 40px;
+	text-align: center;
+	
+	background-color: rgba(0,0,0,0.5);
+	
+	z-index: 100;
+}
+
+#loadBar {
+
+	position: absolute;
+	
+	width: 100%;
+	
+	bottom: 0%;
+	
+	z-index: 100;
+	
+}
+
+#loadMSG {
+	
+	color: rgba(255,255,255,1);
+	font-size: 40px;
+	
+	height: 50%;
+
+}
+
+#bar {
+	 
+	width: 0px;
+	height: 40px;
+
+	background-color: rgba(255,255,255,1);
+	
+}
+
+#map {
+
+	position: absolute;
+
+	width: 307px;
+	height: 421px;
+	
+	top: 5%;
+	right: 5%;
+	
+	align-content: center;
+	
+	z-index: 90;
+
+}
+
+#plan {
+
+	position: absolute;
+	
+	width: 307px;
+	height: 421px;
+	
+	align-content: center;
+	
+	opacity: 0.5;
+}
+
+#cursor {	
+	position: absolute;	
+}
+
+#menu {	
+	position: absolute;
+	width: 20%;
+	height: 100%;
+	background-color: #FFF;
+	padding:15px;
+	text-align:center;
+}
+
+#menu ul {	 list-style-type:none;}
+#menu ul li {
+    display:block; 
+    width:100px;
+    background-color:#FFF;
+    color:black;
+    text-decoration:none;
+    text-align:center;
+    padding:5px;
+    border:2px solid;
+    margin-right: 20px;
+	margin-top:10px;
+
+
+    
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    /*IE 7 AND 8 DO NOT SUPPORT BORDER RADIUS*/
+    -moz-box-shadow: 0px 0px 12px #000000;
+    -webkit-box-shadow: 0px 0px 12px #000000;
+    box-shadow: 0px 0px 12px #000000;
+    /*IE 7 AND 8 DO NOT SUPPORT BLUR PROPERTY OF SHADOWS*/
+
+}
+#Stats-output{
+    z-index: 50;
+    position:absolute;
+    height:100px;
+    margin-top:30px;
+    margin-left:300px;
+
+}	
+	
